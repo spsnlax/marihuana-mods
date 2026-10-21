@@ -803,7 +803,7 @@ async function updateDiscordStats() {
     const resInvite = await fetch(`https://discord.com/api/v10/invites/${inviteCode}?with_counts=true`);
     const dataInvite = await resInvite.json();
     if (dataInvite && dataInvite.approximate_member_count !== undefined) {
-      document.getElementById('totalMembersCount').textContent = dataInvite.approximate_member_count + '+';
+      document.getElementById('totalMembersCount').textContent = dataInvite.approximate_member_count;
     }
   } catch (err) {
     console.error('No se pudo obtener el total de miembros mediante la invitación:', err);
@@ -812,7 +812,7 @@ async function updateDiscordStats() {
       const resStats = await fetch('stats.json');
       const statsData = await resStats.json();
       if (statsData && statsData.total_members !== undefined) {
-        document.getElementById('totalMembersCount').textContent = statsData.total_members + '+';
+        document.getElementById('totalMembersCount').textContent = dataInvite.approximate_member_count;
       }
     } catch (e) {
       document.getElementById('totalMembersCount').textContent = '160+';
