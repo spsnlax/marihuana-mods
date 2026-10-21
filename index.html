@@ -767,9 +767,10 @@ footer { padding: 24px 0 100px; border-top: 1px solid rgba(var(--accent-rgb),.25
 <script>
 const DISCORD_URL = 'https://discord.gg/fHWE9cUhyw';
 
-// ACTUALIZAR ESTADÍSTICAS Y LISTA DE MIEMBROS EN TIEMPO REAL DESDE EL WIDGET Y STATS.JSON
+// ACTUALIZAR ESTADÍSTICAS Y LISTA DE MIEMBROS EN TIEMPO REAL DESDE LA API DE INVITACIÓN Y WIDGET
 async function updateDiscordStats() {
   const serverId = '1472800491112108212';
+  const inviteCode = 'fHWE9cUhyw';
   
   // 1. Obtener datos de miembros en línea y avatares del Widget oficial de Discord
   try {
@@ -780,7 +781,6 @@ async function updateDiscordStats() {
         document.getElementById('onlineCount').textContent = data.presence_count;
       }
       
-      // Renderizar la lista de avatares de usuarios conectados si existe
       const usersGrid = document.getElementById('discordUsersGrid');
       if (data.members && data.members.length > 0) {
         usersGrid.innerHTML = data.members.map(member => `
@@ -798,16 +798,25 @@ async function updateDiscordStats() {
     document.getElementById('discordUsersGrid').innerHTML = '<span style="font-size:12px;color:#ff5555;">Error al cargar usuarios activos.</span>';
   }
 
-  // 2. Obtener el total de miembros reales desde tu archivo stats.json (actualizado por tu bot de Python)
+  // 2. Obtener el total de miembros reales directamente desde la API de invitación de Discord
   try {
-    const resStats = await fetch('stats.json');
-    const statsData = await resStats.json();
-    if (statsData && statsData.total_members !== undefined) {
-      document.getElementById('totalMembersCount').textContent = statsData.total_members + '+';
+    const resInvite = await fetch(`https://discord.com/api/v10/invites/${inviteCode}?with_counts=true`);
+    const dataInvite = await resInvite.json();
+    if (dataInvite && dataInvite.approximate_member_count !== undefined) {
+      document.getElementById('totalMembersCount').textContent = dataInvite.approximate_member_count + '+';
     }
   } catch (err) {
-    console.error('No se pudo leer stats.json:', err);
-    document.getElementById('totalMembersCount').textContent = '160+';
+    console.error('No se pudo obtener el total de miembros mediante la invitación:', err);
+    // Intento de respaldo leyendo stats.json local si falla la API
+    try {
+      const resStats = await fetch('stats.json');
+      const statsData = await resStats.json();
+      if (statsData && statsData.total_members !== undefined) {
+        document.getElementById('totalMembersCount').textContent = statsData.total_members + '+';
+      }
+    } catch (e) {
+      document.getElementById('totalMembersCount').textContent = '160+';
+    }
   }
 }
 
